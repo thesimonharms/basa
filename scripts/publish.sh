@@ -88,25 +88,17 @@ if ! npm run typecheck --silent; then
 fi
 green "  ✓ tests + typecheck clean"
 
-# 6. npm pkg fix: catch any silent auto-corrections (the 0.1.0 bin-path
-#    bug surfaced this way) and apply them to package.json before
-#    publishing. If the fix changes the file, fail loud so we notice.
-bold "6. Running \`npm pkg fix\`…"
-if ! npm pkg fix --force >/dev/null 2>&1; then
-  red "  ✗ \`npm pkg fix\` failed."
-  exit 1
-fi
-if ! git diff --quiet package.json; then
-  red "  ✗ \`npm pkg fix\` changed package.json. Review the diff and commit it:"
-  git diff package.json
-  exit 1
-fi
-green "  ✓ package.json clean (no auto-corrections needed)"
-
-# 7. Build: tsc → dist/. `prepublishOnly` will also run this when we
+# 6. Build: tsc → dist/. `prepublishOnly` will also run this when we
 #    hit `npm publish`, but doing it now means the dry-run below
 #    shows the right tarball contents.
-bold "7. Building…"
+#
+#    We do NOT run `npm pkg fix` here on purpose. `npm pkg fix`
+#    rewrites "./bin/basa.js" → "bin/basa.js" (strips the ./), which
+#    npm then warns about and applies to the registry metadata view
+#    while still shipping a working tarball. The rewrite is harmless
+#    for the package, but it would force a confusing
+#    `git diff package.json` step on every release. Skip it.
+bold "6. Building…"
 rm -rf dist
 if ! npm run build --silent; then
   red "  ✗ tsc build failed."
@@ -118,11 +110,11 @@ if [ ! -f dist/commands/study.command.js ]; then
 fi
 green "  ✓ dist/ built (commands and providers present)"
 
-# 8. Pack dry-run: show what's about to be uploaded.
-bold "8. Inspecting tarball…"
+# 7. Pack dry-run: show what's about to be uploaded.
+bold "7. Inspecting tarball…"
 npm pack --dry-run
 
-# 9. Confirm.
+# 8. Confirm.
 echo
 blue "About to publish @thesimonharms/basa@$VERSION to the public npm registry."
 blue "This is irreversible (you can deprecate or unpublish within 72 hours, but"
@@ -134,12 +126,12 @@ if [ "$CONFIRM" != "publish" ]; then
   exit 1
 fi
 
-# 10. Publish.
-bold "10. Publishing…"
+# 9. Publish.
+bold "9. Publishing…"
 npm publish --access public
 
-# 11. Verify.
-bold "11. Verifying…"
+# 10. Verify.
+bold "10. Verifying…"
 sleep 2
 if npm view "@thesimonharms/basa@$VERSION" version >/dev/null 2>&1; then
   green "  ✓ @thesimonharms/basa@$VERSION is live on the registry."
