@@ -37,7 +37,8 @@
     "dev": "node bin/basa.js dev welcome",
     "doctor": "node bin/basa.js doctor",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "publish": "./scripts/publish.sh"
   },
   "dependencies": {
     "@mudah-cli/audio": "^0.5.0",
