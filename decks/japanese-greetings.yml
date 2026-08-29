@@ -1,0 +1,15 @@
+name: Japanese greetings
+description: A handful of greetings and politeness phrases
+cards:
+  - front: こんにちは
+    back: hello / good afternoon
+  - front: おはようございます
+    back: good morning (polite)
+  - front: こんばんは
+    back: good evening
+  - front: ありがとうございます
+    back: thank you (polite)
+  - front: すみません
+    back: excuse me / I'm sorry
+  - front: おやすみなさい
+    back: good night

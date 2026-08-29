@@ -1,0 +1,53 @@
+{
+  "name": "@thesimonharms/basa",
+  "version": "0.1.0",
+  "description": "Basa — language-learning flashcards in your terminal",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "basa": "./bin/basa.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "config",
+    "test",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "engines": {
+    "node": ">=26"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thesimonharms/basa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thesimonharms/basa/issues"
+  },
+  "homepage": "https://github.com/thesimonharms/basa#readme",
+  "scripts": {
+    "start": "node bin/basa.js",
+    "study": "node bin/basa.js study",
+    "list": "node bin/basa.js list",
+    "dev": "node bin/basa.js dev welcome",
+    "doctor": "node bin/basa.js doctor",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mudah-cli/audio": "^0.5.0",
+    "@mudah-cli/mudah": "^0.5.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^26.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.0.0"
+  }
+}

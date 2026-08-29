@@ -1,0 +1,19 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.local
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# User-deck progress sidecars (anywhere in the tree). Generated on the
+# first study of a deck, never committed.
+*.progress.json
+
+# Throwaway debug scripts under scratch/ — kept locally, not in the
+# published tarball, not in git.
+scratch/
+
+# Agent session scaffolding (Command Code) — not user content.
+.commandcode/

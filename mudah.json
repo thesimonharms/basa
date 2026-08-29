@@ -1,0 +1,9 @@
+{
+  "name": "basa",
+  "version": "0.1.0",
+  "bin": "basa",
+  "description": "Basa — language-learning flashcards in your terminal",
+  "ui": {
+    "theme": "auto"
+  }
+}

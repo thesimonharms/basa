@@ -1,0 +1,22 @@
+name: Japanese with images
+description: |
+  Same as japanese-greetings but with a per-card image field. The renderer
+  detects image extensions and embeds them as half-block cells, so they
+  render in any truecolor terminal — no Kitty/SIXEL required.
+
+  To use: drop your own PNG/JPEG/SVG files at the listed paths (or update
+  the `image:` value to point at your own assets). Then run
+  `basa study japanese-with-images`.
+cards:
+  - front:
+      text: こんにちは
+      image: ./assets/konnichiwa.png
+    back: hello / good afternoon
+  - front:
+      text: おはようございます
+      image: ./assets/ohayou.png
+    back: good morning (polite)
+  - front:
+      text: こんばんは
+      image: ./assets/konbanwa.png
+    back: good evening

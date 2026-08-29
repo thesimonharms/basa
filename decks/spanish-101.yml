@@ -1,0 +1,33 @@
+name: Spanish 101
+description: A first pass at common Spanish vocabulary
+cards:
+  - front: hola
+    back: hello
+  - front: adiós
+    back: goodbye
+  - front: por favor
+    back: please
+  - front: gracias
+    back: thank you
+  - front: lo siento
+    back: I'm sorry
+  - front: el perro
+    back: the dog
+  - front: el gato
+    back: the cat
+  - front: la casa
+    back: the house
+  - front: ¿Cómo estás?
+    back: How are you?
+  - front: ¿Dónde está el baño?
+    back: Where is the bathroom?
+  - front: Me llamo Simón.
+    back: My name is Simón.
+  - front: No entiendo.
+    back: I don't understand.
+  - front: agua
+    back: water
+  - front: pan
+    back: bread
+  - front: libro
+    back: book
