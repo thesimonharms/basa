@@ -88,11 +88,41 @@ if ! npm run typecheck --silent; then
 fi
 green "  ✓ tests + typecheck clean"
 
-# 6. Pack dry-run: show what's about to be uploaded.
-bold "6. Inspecting tarball…"
+# 6. npm pkg fix: catch any silent auto-corrections (the 0.1.0 bin-path
+#    bug surfaced this way) and apply them to package.json before
+#    publishing. If the fix changes the file, fail loud so we notice.
+bold "6. Running \`npm pkg fix\`…"
+if ! npm pkg fix --force >/dev/null 2>&1; then
+  red "  ✗ \`npm pkg fix\` failed."
+  exit 1
+fi
+if ! git diff --quiet package.json; then
+  red "  ✗ \`npm pkg fix\` changed package.json. Review the diff and commit it:"
+  git diff package.json
+  exit 1
+fi
+green "  ✓ package.json clean (no auto-corrections needed)"
+
+# 7. Build: tsc → dist/. `prepublishOnly` will also run this when we
+#    hit `npm publish`, but doing it now means the dry-run below
+#    shows the right tarball contents.
+bold "7. Building…"
+rm -rf dist
+if ! npm run build --silent; then
+  red "  ✗ tsc build failed."
+  exit 1
+fi
+if [ ! -f dist/commands/study.command.js ]; then
+  red "  ✗ build output looks wrong — dist/commands/study.command.js is missing."
+  exit 1
+fi
+green "  ✓ dist/ built (commands and providers present)"
+
+# 8. Pack dry-run: show what's about to be uploaded.
+bold "8. Inspecting tarball…"
 npm pack --dry-run
 
-# 7. Confirm.
+# 9. Confirm.
 echo
 blue "About to publish @thesimonharms/basa@$VERSION to the public npm registry."
 blue "This is irreversible (you can deprecate or unpublish within 72 hours, but"
@@ -104,12 +134,12 @@ if [ "$CONFIRM" != "publish" ]; then
   exit 1
 fi
 
-# 8. Publish.
-bold "8. Publishing…"
+# 10. Publish.
+bold "10. Publishing…"
 npm publish --access public
 
-# 9. Verify.
-bold "9. Verifying…"
+# 11. Verify.
+bold "11. Verifying…"
 sleep 2
 if npm view "@thesimonharms/basa@$VERSION" version >/dev/null 2>&1; then
   green "  ✓ @thesimonharms/basa@$VERSION is live on the registry."

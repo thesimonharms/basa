@@ -9,16 +9,22 @@
     ],
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "outDir": "dist",
+    "rootDir": "src",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "declaration": false,
+    "sourceMap": false
   },
   "include": [
-    "src",
-    "config",
-    "test"
+    "src"
+  ],
+  "exclude": [
+    "test",
+    "node_modules",
+    "dist"
   ]
 }

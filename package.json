@@ -1,6 +1,6 @@
 {
   "name": "@thesimonharms/basa",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Basa — language-learning flashcards in your terminal",
   "type": "module",
   "license": "MIT",
@@ -9,9 +9,7 @@
   },
   "files": [
     "bin",
-    "src",
-    "config",
-    "test",
+    "dist",
     "README.md",
     "LICENSE",
     "package.json"
@@ -36,8 +34,10 @@
     "list": "node bin/basa.js list",
     "dev": "node bin/basa.js dev welcome",
     "doctor": "node bin/basa.js doctor",
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.test.json",
     "publish": "./scripts/publish.sh"
   },
   "dependencies": {
