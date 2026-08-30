@@ -5,14 +5,16 @@ import { BasaFx } from '../flashcards/sound.js';
 import { StudyApp } from '../tui/StudyApp.js';
 
 export default class StudyCommand extends Command {
-  signature = 'study {name?} [--no-sound] [--dir=]';
+  signature = 'study {name?} [--no-sound] [--dir=] [--size=]';
   description = 'Open a flashcard deck in the terminal';
 
   async handle(): Promise<number> {
     const decksDir = this.configDecksDir();
     const deckPath = await resolveDeckPath(decksDir, this.arg('name'));
     const deck = await loadDeck(deckPath);
-    const cards = await loadReviewCards(deck, deckPath);
+    const allCards = await loadReviewCards(deck, deckPath);
+    const size = this.parseSize(this.option('size'));
+    const cards = size === undefined ? allCards : allCards.slice(0, size);
 
     const fx = await openFx(this.configSound());
     let study: StudyApp | undefined;
@@ -71,6 +73,15 @@ export default class StudyCommand extends Command {
     const value = this.app.config().get<string>('app.sound');
     if (value === 'on' || value === 'off' || value === 'auto') return value;
     return 'auto';
+  }
+
+  private parseSize(raw: string | boolean | undefined): number | undefined {
+    if (raw === undefined) return undefined;
+    if (typeof raw !== 'string' || raw.length === 0 || !/^[1-9][0-9]*$/.test(raw)) {
+      const got = typeof raw === 'string' ? raw : String(raw);
+      throw this.usageError(`--size must be a positive integer (got "${got}")`);
+    }
+    return Number(raw);
   }
 }
 
