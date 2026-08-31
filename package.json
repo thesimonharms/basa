@@ -37,7 +37,7 @@
     "build": "tsc",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.test.json",
-    "publish": "node scripts/publish.mjs"
+    "release": "node scripts/publish.mjs"
   },
   "dependencies": {
     "@mudah-cli/audio": "^0.5.0",

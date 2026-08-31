@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // Publish @thesimonharms/basa to npm.
 //
-// Usage:  npm run publish                    # publish the current version
-//         npm run publish -- --patch         # bump patch, tag, push, publish
-//         npm run publish -- --minor         # bump minor, tag, push, publish
-//         npm run publish -- --major         # bump major, tag, push, publish
-//         npm run publish -- 1.2.3           # publish a specific version
+// Usage:  npm run release                    # publish the current version
+//         npm run release -- --patch         # bump patch, tag, push, publish
+//         npm run release -- --minor         # bump minor, tag, push, publish
+//         npm run release -- --major         # bump major, tag, push, publish
+//         npm run release -- 1.2.3           # publish a specific version
 //
 // Bump flags write package.json, commit it as `release: vX.Y.Z`, create an
 // annotated tag, and push both before running the checks below — so the
@@ -120,10 +120,21 @@ function run(command, args) {
 // 0. Sanity: is this version already published? Check the registry first —
 //    a re-run should die here in under a second, not after tests+build.
 console.log(bold('0. Checking registry…'));
-if (run('npm', ['view', PKG, 'version']) !== null) {
+const view = spawnSync('npm', ['view', PKG, 'version'], { encoding: 'utf8' });
+const viewErr = (view.stderr ?? '').trim();
+if (view.status === 0) {
   console.error(red(`  ✗ ${PKG} is already published.`));
   console.error('    npm will refuse to overwrite it (versions are immutable).');
   console.error('    Bump the version in package.json, tag it, and re-run.');
+  process.exit(1);
+}
+if (viewErr !== '' && !/E404/.test(viewErr)) {
+  // The view failed for a reason other than "package not found" (a bad
+  // token, a network error, a registry outage). Don't guess — abort here
+  // instead of sailing through the checks and failing at the PUT.
+  console.error(red(`  ✗ could not verify ${PKG} on the registry (npm view exited ${view.status}).`));
+  if (viewErr !== '') console.error(`    ${viewErr.split('\n')[0]}`);
+  console.error('    Fix the npm auth/network issue and re-run.');
   process.exit(1);
 }
 console.log(green(`  ✓ ${PKG} is not on the registry yet`));
