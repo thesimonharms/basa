@@ -1,6 +1,6 @@
 {
   "name": "@thesimonharms/basa",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Basa — language-learning flashcards in your terminal",
   "type": "module",
   "license": "MIT",
@@ -35,10 +35,9 @@
     "dev": "node bin/basa.js dev welcome",
     "doctor": "node bin/basa.js doctor",
     "build": "tsc",
-    "prepublishOnly": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.test.json",
-    "publish": "./scripts/publish.sh"
+    "publish": "node scripts/publish.mjs"
   },
   "dependencies": {
     "@mudah-cli/audio": "^0.5.0",
