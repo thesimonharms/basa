@@ -1,6 +1,6 @@
 {
   "name": "@thesimonharms/basa",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Basa — language-learning flashcards in your terminal",
   "type": "module",
   "license": "MIT",
