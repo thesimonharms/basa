@@ -4,7 +4,7 @@ import type { ReviewCard } from '../src/flashcards/types.js';
 
 describe('SRS algorithm', () => {
   it('freshState starts due immediately', () => {
-    const s = freshState(1_000);
+    const s = freshState();
     expect(s.due).toBeNull();
     expect(s.streak).toBe(0);
     expect(s.ease).toBe(2.5);

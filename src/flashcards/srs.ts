@@ -4,13 +4,8 @@ import type { Grade, SrsState } from './types.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export function freshState(now: number = Date.now()): SrsState {
-  // `due: null` means "due immediately" — see `isDue`. Using a captured
-  // timestamp here is racey when the caller samples `Date.now()` again
-  // later (e.g. the list command compares state.due against a `now`
-  // sampled before the loop, while the loop's `loadReviewCards` calls
-  // freshState() for each card with progressively later timestamps).
-  void now;
+export function freshState(): SrsState {
+  // `due: null` means "due immediately" — see `isDue`.
   return {
     due: null,
     streak: 0,

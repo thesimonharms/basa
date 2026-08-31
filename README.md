@@ -49,6 +49,15 @@ basa study spanish-101
 # Create an empty deck scaffold (YAML by default; --format=json for JSON).
 basa new italian-101
 basa new italian-101 --format=json
+
+# Import an existing Anki collection (.apkg) as a new deck.
+basa import ~/Downloads/spanish-core.apkg
+basa import ~/Downloads/spanish-core.apkg --name=spanish-from-anki --format=json
+
+# Manage deck-level tags.
+basa tag spanish-101 add verbs
+basa tag spanish-101 rm verbs
+basa tag spanish-101 list
 ```
 
 While studying:
@@ -108,6 +117,30 @@ cards:
 
 `./assets/...` is resolved relative to the deck file's directory.
 
+### Tags
+
+Decks and cards can carry tags for filtering:
+
+```yaml
+name: Spanish 101
+tags: [spanish, vocab]
+cards:
+  - front: hola
+    back: hello
+    tags: [greetings]
+```
+
+Filter with `basa list --tag=spanish` or `basa study --tag=greetings`, and
+manage deck tags with `basa tag <deck> add|rm|list <tag>`.
+
+### Importing from Anki
+
+`.apkg` collections can be brought in directly:
+
+```sh
+basa import ~/Downloads/spanish-core.apkg
+```
+
 ### Why images for scripts?
 
 Terminal font coverage for CJK, Arabic, Devanagari, and other complex
@@ -136,12 +169,13 @@ setting `sound: 'off'`.
 ## Structure
 
 - `bin/basa.js` — executable entrypoint
-- `src/flashcards/` — pure logic (types, SRS, deck I/O, sound, image, render)
+- `src/flashcards/` — pure logic (types, SRS, deck I/O, sound, image, render, match, anki import)
 - `src/tui/` — the TUI widgets (CardView, Header, Footer, StudyApp, effects)
 - `src/commands/` — one `*.command.ts` per CLI command
 - `decks/` — sample decks (GitHub only; not in the npm tarball)
 - `test/` — vitest unit tests
 - `config/app.ts` — schema-validated defaults
+- `ROADMAP.md` — shipped and up-for-grabs feature ideas
 
 ## Development
 

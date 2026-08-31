@@ -46,6 +46,8 @@ export interface Card {
 export interface Deck {
   name: string;
   description?: string;
+  /** Deck-level tags. Cards may carry their own tags too. */
+  tags?: string[];
   cards: Card[];
 }
 

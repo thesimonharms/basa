@@ -1,6 +1,6 @@
 import { BaseComponent } from '@mudah-cli/tui';
 import { detectCapabilities } from '@mudah-cli/terminal';
-import { paint } from '@mudah-cli/ui';
+import { paint, visibleLength } from '@mudah-cli/ui';
 
 export interface HeaderOptions {
   deckName: string;
@@ -39,20 +39,6 @@ export class Header extends BaseComponent {
 }
 
 function centerLine(text: string, width: number): string {
-  // Use a simple visible-length estimate: count chars, ignore ANSI.
-  return ' '.repeat(Math.max(0, Math.floor((width - visibleOf(text)) / 2))) + text;
-}
-
-function visibleOf(text: string): number {
-  let visible = 0;
-  let inEscape = false;
-  for (const ch of text) {
-    if (ch === '\x1b') { inEscape = true; continue; }
-    if (inEscape) {
-      if (ch === 'm') inEscape = false;
-      continue;
-    }
-    visible++;
-  }
-  return visible;
+  // `visibleLength` (from @mudah-cli/ui) knows about wide chars and ANSI.
+  return ' '.repeat(Math.max(0, Math.floor((width - visibleLength(text)) / 2))) + text;
 }

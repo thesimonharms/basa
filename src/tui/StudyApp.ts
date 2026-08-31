@@ -3,6 +3,7 @@ import type { Deck, Grade, ReviewCard } from '../flashcards/types.js';
 import { grade, pickNext } from '../flashcards/srs.js';
 import { saveReviewCards } from '../flashcards/deck.js';
 import { BasaFx } from '../flashcards/sound.js';
+import { isFuzzyMatch, sideText } from '../flashcards/match.js';
 import { CardView } from './CardView.js';
 import { Header } from './Header.js';
 import { Footer } from './Footer.js';
@@ -14,6 +15,8 @@ export interface StudyAppOptions {
   width: number;
   height: number;
   fx: BasaFx;
+  /** Drill mode: self-assessment only, nothing persisted. */
+  drill?: boolean;
 }
 
 interface SessionStats {
@@ -34,11 +37,15 @@ export class StudyApp {
   private readonly cardView: CardView;
   private readonly header: Header;
   private readonly footer: Footer;
-  private cards: ReviewCard[];
+  /** Cards for this session (mutated in place as grades are applied). */
+  readonly cards: ReviewCard[];
   private current: ReviewCard | undefined;
   private stats: SessionStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  /** Whether each graded card's typed answer fuzzy-matched the back. */
+  private typedResults: boolean[] = [];
   private width: number;
   private height: number;
+  private readonly drill: boolean;
 
   private readonly options: StudyAppOptions;
 
@@ -47,6 +54,7 @@ export class StudyApp {
     this.cards = options.cards;
     this.width = options.width;
     this.height = options.height;
+    this.drill = options.drill === true;
 
     const cardHeight = Math.max(8, options.height - 8);
     this.cardView = new CardView({
@@ -88,8 +96,9 @@ export class StudyApp {
     this.cardView.resize(width, cardHeight);
   }
 
-  /** Persist state on shutdown. Safe to call multiple times. */
+  /** Persist state on shutdown. No-op in drill mode — SRS is ignored. */
   async persist(): Promise<void> {
+    if (this.drill) return;
     await saveReviewCards(this.options.deckPath, this.cards).catch(() => {});
   }
 
@@ -102,8 +111,12 @@ export class StudyApp {
     await this.cardView.setCard(this.current);
   }
 
-  private async handleGrade(gradeValue: Grade, _typed: string): Promise<void> {
+  private async handleGrade(gradeValue: Grade, typed: string): Promise<void> {
     if (this.current === undefined) return;
+    const back = sideText(this.current.card.back);
+    if (typed.length > 0) {
+      this.typedResults.push(isFuzzyMatch(typed, back));
+    }
     const idx = this.cards.indexOf(this.current);
     if (idx < 0) return;
     const next = grade(this.current.state, gradeValue);
@@ -143,5 +156,17 @@ export class StudyApp {
       state: { ...this.current.state, due: Date.now() + 30_000 },
     };
     void this.advance();
+  }
+
+  /** Snapshot of the session stats for the post-run recap. */
+  get summary(): SessionStats {
+    return { ...this.stats };
+  }
+
+  /** Accuracy of typed answers this session (0 total when none were typed). */
+  get typedAccuracy(): { correct: number; total: number } {
+    const total = this.typedResults.length;
+    const correct = this.typedResults.filter(Boolean).length;
+    return { correct, total };
   }
 }

@@ -4,7 +4,7 @@ import { isDue } from '../flashcards/srs.js';
 import { renderTable, type TableColumn } from '@mudah-cli/ui';
 
 export default class ListCommand extends Command {
-  signature = 'list [--all] [--dir=]';
+  signature = 'list [--all] [--dir=] [--tag=] [--json]';
   description = 'List decks (and per-deck card counts)';
 
   async handle(): Promise<number> {
@@ -20,14 +20,22 @@ export default class ListCommand extends Command {
     }
 
     const showAll = this.option('all') === true;
+    const asJson = this.option('json') === true;
     const now = Date.now();
     const rows: string[][] = [];
+    const jsonRows: Array<{ deck: string; cards: number; due: number; description: string }> = [];
     let totalCards = 0;
     let totalDue = 0;
 
+    const tagFilter = this.option('tag');
     for (const path of paths) {
       const deck = await loadDeck(path);
       const cards = await loadReviewCards(deck, path);
+      if (typeof tagFilter === 'string' && tagFilter.length > 0) {
+        const deckTags = deck.tags ?? [];
+        const cardTags = cards.flatMap((c) => c.card.tags ?? []);
+        if (!deckTags.includes(tagFilter) && !cardTags.includes(tagFilter)) continue;
+      }
       const due = cards.filter((c) => isDue(c.state, now)).length;
       totalCards += cards.length;
       totalDue += due;
@@ -38,6 +46,7 @@ export default class ListCommand extends Command {
         String(due),
         truncate(description, 50),
       ]);
+      jsonRows.push({ deck: deck.name, cards: cards.length, due, description });
     }
 
     if (showAll) {
@@ -52,7 +61,12 @@ export default class ListCommand extends Command {
       { header: 'Description', align: 'left' },
     ];
 
-    this.output.raw(renderTable(columns, rows, { level: 0, unicode: true }));
+    if (asJson) {
+      this.output.raw(JSON.stringify(jsonRows, null, 2));
+      this.output.raw('');
+    } else {
+      this.output.raw(renderTable(columns, rows, { level: 0, unicode: true }));
+    }
     this.output.raw('');
     this.output.muted(`${totalDue} of ${totalCards} cards due across ${paths.length} decks.`);
     return 0;

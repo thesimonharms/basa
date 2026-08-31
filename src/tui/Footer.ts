@@ -1,6 +1,6 @@
 import { BaseComponent } from '@mudah-cli/tui';
 import { detectCapabilities } from '@mudah-cli/terminal';
-import { paint } from '@mudah-cli/ui';
+import { paint, visibleLength } from '@mudah-cli/ui';
 
 const KEYS: ReadonlyArray<{ key: string; label: string; tone: 'good' | 'meh' | 'bad' | 'neutral' }> = [
   { key: '1', label: 'Again', tone: 'bad' },
@@ -47,19 +47,5 @@ export class Footer extends BaseComponent {
 }
 
 function centerLine(text: string, width: number): string {
-  return ' '.repeat(Math.max(0, Math.floor((width - visibleOf(text)) / 2))) + text;
-}
-
-function visibleOf(text: string): number {
-  let visible = 0;
-  let inEscape = false;
-  for (const ch of text) {
-    if (ch === '\x1b') { inEscape = true; continue; }
-    if (inEscape) {
-      if (ch === 'm') inEscape = false;
-      continue;
-    }
-    visible++;
-  }
-  return visible;
+  return ' '.repeat(Math.max(0, Math.floor((width - visibleLength(text)) / 2))) + text;
 }

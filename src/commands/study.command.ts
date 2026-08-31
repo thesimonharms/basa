@@ -1,11 +1,12 @@
 import { Command } from '@mudah-cli/mudah';
 import { Program } from '@mudah-cli/tui';
 import { loadDeck, loadReviewCards, resolveDeckPath, defaultDecksDir } from '../flashcards/deck.js';
+import { sample } from '../flashcards/sample.js';
 import { BasaFx } from '../flashcards/sound.js';
 import { StudyApp } from '../tui/StudyApp.js';
 
 export default class StudyCommand extends Command {
-  signature = 'study {name?} [--no-sound] [--dir=] [--size=]';
+  signature = 'study {name?} [--no-sound] [--dir=] [--size=] [--drill] [--tag=]';
   description = 'Open a flashcard deck in the terminal';
 
   async handle(): Promise<number> {
@@ -14,25 +15,35 @@ export default class StudyCommand extends Command {
     const deck = await loadDeck(deckPath);
     const allCards = await loadReviewCards(deck, deckPath);
     const size = this.parseSize(this.option('size'));
-    const cards = size === undefined ? allCards : allCards.slice(0, size);
+    // `--size` caps the number of cards per round, but each round draws a
+    // fresh random sample — otherwise you'd see the same first N forever.
+    const cards = size === undefined ? allCards : sample(allCards, size);
+
+    // Drill mode ignores SRS entirely: grades are for self-assessment only
+    // and nothing is persisted.
+    const drill = this.option('drill') === true;
+    const tagFilter = this.option('tag');
+    const pool = typeof tagFilter === 'string' && tagFilter.length > 0
+      ? allCards.filter((c) => c.card.tags?.includes(tagFilter) === true)
+      : cards;
 
     const fx = await openFx(this.configSound());
     let study: StudyApp | undefined;
     let resizeListener: (() => void) | undefined;
-
-    const program = new Program({ mouse: true, keyboard: true, stdin: process.stdin });
 
     const width = (process.stdout as { columns?: number }).columns ?? 80;
     const height = (process.stdout as { rows?: number }).rows ?? 24;
     study = new StudyApp({
       deck,
       deckPath,
-      cards,
+      cards: pool,
       width,
       height,
       fx,
+      drill,
     });
-    program.mount(study.root);
+
+    const program = new Program({ mouse: true, keyboard: true, stdin: process.stdin });
 
     // Repaint loop: Program repaints every 16ms via setInterval, but we
     // want the StudyApp to also tick (advance animations, swap card).
@@ -51,14 +62,27 @@ export default class StudyCommand extends Command {
     };
     process.stdout.on('resize', resizeListener);
 
+    let code = 0;
     try {
-      return await program.run();
+      code = await program.run();
     } finally {
       clearInterval(ticker);
       if (resizeListener !== undefined) process.stdout.off('resize', resizeListener);
       await study?.persist();
       await fx.dispose();
     }
+
+    if (study !== undefined) {
+      const s = study.summary;
+      const acc = study.typedAccuracy;
+      const parts = [`reviewed ${s.reviewed} card${s.reviewed === 1 ? '' : 's'}`];
+      if (acc.total > 0) {
+        const pct = Math.round((acc.correct / acc.total) * 100);
+        parts.push(`typed answers ${pct}% correct (${acc.correct}/${acc.total})`);
+      }
+      this.output.muted(`Session recap — ${parts.join(' · ')}.`);
+    }
+    return code;
   }
 
   private configDecksDir(): string {

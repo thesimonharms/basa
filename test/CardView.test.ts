@@ -9,7 +9,7 @@ function key(name: string, ch?: string): KeyEvent {
 }
 
 function makeCard(front: string, back: string): ReviewCard {
-  return { card: { front, back }, state: freshState(0) };
+  return { card: { front, back }, state: freshState() };
 }
 
 describe('CardView', () => {

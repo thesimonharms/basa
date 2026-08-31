@@ -32,9 +32,24 @@ export async function listDecks(dir: string): Promise<string[]> {
   if (!existsSync(path)) return [];
   const entries = await readdir(path, { withFileTypes: true });
   return entries
-    .filter((e) => e.isFile() && /\.(ya?ml|json)$/i.test(e.name))
+    // `<deck>.yml.progress.json` is SRS state, not a deck — skip it.
+    .filter((e) => e.isFile() && /\.(ya?ml|json)$/i.test(e.name) && !e.name.endsWith('.progress.json'))
     .map((e) => join(path, e.name))
     .sort();
+}
+
+/**
+ * Write a deck to disk as YAML or JSON. Creates parent directories and
+ * refuses to clobber an existing file (that's what `createDeck` is for).
+ */
+export async function saveDeck(path: string, deck: Deck, format: 'yaml' | 'json' = 'yaml'): Promise<string> {
+  const file = isAbsolute(path) ? path : expandHome(path);
+  const body = format === 'json'
+    ? JSON.stringify(deck, null, 2) + '\n'
+    : yaml.dump(deck, { lineWidth: 120 });
+  await mkdir(dirname(file), { recursive: true });
+  await writeFile(file, body, 'utf8');
+  return file;
 }
 
 export async function loadDeck(file: string): Promise<Deck> {
@@ -80,6 +95,7 @@ function validateDeck(value: unknown, path: string): Deck {
   return {
     name: obj.name,
     description: typeof obj.description === 'string' ? obj.description : undefined,
+    tags: Array.isArray(obj.tags) ? obj.tags.filter((t): t is string => typeof t === 'string') : undefined,
     cards,
   };
 }
@@ -172,6 +188,7 @@ export async function createDeck(file: string, name: string): Promise<string> {
   const stub: Deck = {
     name,
     description: 'A new Basa deck.',
+    tags: [],
     cards: [
       { front: 'hello', back: 'a greeting' },
       { front: 'thanks', back: 'an expression of gratitude' },

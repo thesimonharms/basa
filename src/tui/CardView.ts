@@ -140,6 +140,11 @@ export class CardView extends BaseComponent {
   }
 
   override onKey(event: KeyEvent): boolean {
+    // ctrl+u clears the typed answer (readline-style).
+    if (event.ctrl === true && (event.name === 'u' || event.name === 'ctrl+u')) {
+      this.typed = '';
+      return true;
+    }
     if (event.name === 'space' || event.name === 'enter') {
       this.revealed = true;
       this.revealAnim = { durationFrames: 8, frame: 0 };

@@ -134,6 +134,16 @@ describe('deck loading', () => {
       expect(files.some((f) => f.endsWith('c.json'))).toBe(true);
     });
   });
+
+  it('listDecks skips SRS progress files', async () => {
+    await withTempDir(async (dir) => {
+      await writeFile(join(dir, 'a.yml'), 'name: a\ncards: []\n', 'utf8');
+      await writeFile(join(dir, 'a.yml.progress.json'), '{"version":1,"states":{}}', 'utf8');
+      const files = await listDecks(dir);
+      expect(files).toHaveLength(1);
+      expect(files[0]?.endsWith('a.yml')).toBe(true);
+    });
+  });
 });
 
 describe('defaultDecksDir', () => {
